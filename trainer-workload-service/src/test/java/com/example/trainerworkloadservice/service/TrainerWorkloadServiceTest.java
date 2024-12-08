@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static com.example.trainerworkloadservice.dto.WorkloadEnum.ADD;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -33,14 +34,15 @@ public class TrainerWorkloadServiceTest {
 
     @BeforeEach
     public void setup() {
-        validRequest = new WorkloadRequest();
-        validRequest.setUsername("testUsername");
-        validRequest.setFirstName("John");
-        validRequest.setLastName("Doe");
-        validRequest.setIsActive(true);
-        validRequest.setTrainingDate("2026-09-01");
-        validRequest.setDuration(60L);
-        validRequest.setActionType("ADD");
+        validRequest = WorkloadRequest.builder()
+                .username("testUsername")
+                .firstName("John")
+                .lastName("Doe")
+                .isActive(true)
+                .trainingDate("2021-08-01")
+                .duration(60L)
+                .actionType(ADD.getType())
+                .build();
     }
 
     @Test

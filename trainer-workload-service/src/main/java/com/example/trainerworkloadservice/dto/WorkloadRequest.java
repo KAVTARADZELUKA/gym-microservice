@@ -1,9 +1,15 @@
 package com.example.trainerworkloadservice.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import jakarta.validation.constraints.*;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class WorkloadRequest {
     @NotBlank
     private String username;

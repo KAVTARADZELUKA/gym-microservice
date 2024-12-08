@@ -34,9 +34,15 @@ public class TransactionLoggingFilter extends OncePerRequestFilter {
 
             logger.info("Transaction Completed: transactionId={}, status={}, message={}",
                     transactionId, response.getStatus(), response.getStatus() == 200 ? "Success" : "Error");
-        } catch (Exception ex) {
-            logger.error("Transaction Failed: transactionId={}, error={}", transactionId, ex.getMessage());
-            throw ex;
+        } catch (IOException ioEx) {
+            logger.error("Transaction Failed: transactionId={}, I/O error={}", transactionId, ioEx.getMessage(), ioEx);
+            throw ioEx;
+        } catch (ServletException servletEx) {
+            logger.error("Transaction Failed: transactionId={}, Servlet error={}", transactionId, servletEx.getMessage(), servletEx);
+            throw servletEx;
+        } catch (RuntimeException runtimeEx) {
+            logger.error("Transaction Failed: transactionId={}, Runtime error={}", transactionId, runtimeEx.getMessage(), runtimeEx);
+            throw runtimeEx;
         }
     }
 }

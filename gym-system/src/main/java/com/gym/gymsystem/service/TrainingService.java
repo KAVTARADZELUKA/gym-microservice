@@ -24,6 +24,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static com.gym.gymsystem.dto.workload.WorkloadEnum.ADD;
+import static com.gym.gymsystem.dto.workload.WorkloadEnum.DELETE;
+
 @Service
 public class TrainingService {
     private static final Logger logger = LoggerFactory.getLogger(TrainingService.class);
@@ -77,7 +80,7 @@ public class TrainingService {
         for (Trainer trainer : training.getTrainers()) {
             sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
                     trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                    training.getTrainingDuration(), "ADD"),transactionId);
+                    training.getTrainingDuration(), ADD.getType()),transactionId);
         }
         return newTraining;
     }
@@ -126,14 +129,12 @@ public class TrainingService {
 
         List<Trainer> newTrainers = trainerService.findAllByUser_UsernameIn(trainerUsernames);
 
-        System.out.println("newTrainersn "+newTrainers);
         if (newTrainers.size() != trainerUsernames.size()) {
             throw new TrainerNotFoundException("One or more trainers not found");
         }
 
         List<Training> trainings = trainingRepository.findByTraineesContaining(trainee);
 
-        System.out.println("trainings "+trainings);
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         for (Training training : trainings) {
@@ -143,13 +144,13 @@ public class TrainingService {
             for (Trainer trainer : training.getTrainers()) {
                 sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
                         trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), "DELETE"),transactionId);
+                        training.getTrainingDuration(), DELETE.getType()),transactionId);
             }
             training.getTrainers().clear();
             for (Trainer trainer : newTrainers) {
                 sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
                         trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), "ADD"),transactionId);
+                        training.getTrainingDuration(), ADD.getType()),transactionId);
             }
             training.getTrainers().addAll(newTrainers);
         }

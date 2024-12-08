@@ -14,6 +14,8 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.trainerworkloadservice.dto.WorkloadEnum.ADD;
+
 @Service
 public class TrainerWorkloadService {
     private static final Logger logger = LoggerFactory.getLogger(TrainerWorkloadService.class);
@@ -33,7 +35,7 @@ public class TrainerWorkloadService {
             TrainerWorkload workload = repository.findByUsername(request.getUsername())
                     .orElseGet(() -> createNewWorkload(request));
 
-            if ("ADD".equalsIgnoreCase(request.getActionType()) && (request.getIsActive() == null || !request.getIsActive())) {
+            if (ADD.getType().equalsIgnoreCase(request.getActionType()) && (request.getIsActive() == null || !request.getIsActive())) {
                 throw new IllegalArgumentException("Cannot add workload for an inactive user.");
             }
 
@@ -99,7 +101,7 @@ public class TrainerWorkloadService {
 
         if (existingSummary != null) {
             updateSummary(existingSummary, duration, actionType);
-        } else if ("ADD".equalsIgnoreCase(actionType)) {
+        } else if (ADD.getType().equalsIgnoreCase(actionType)) {
             summaries.add(new TrainingSummary(year, month, duration));
         } else {
             throw new IllegalArgumentException("Cannot reduce duration for a non-existing training summary.");
@@ -114,7 +116,7 @@ public class TrainerWorkloadService {
     }
 
     private void updateSummary(TrainingSummary summary, Long duration, String actionType) {
-        long newDuration = "ADD".equalsIgnoreCase(actionType)
+        long newDuration = ADD.getType().equalsIgnoreCase(actionType)
                 ? summary.getDuration() + duration
                 : summary.getDuration() - duration;
 
