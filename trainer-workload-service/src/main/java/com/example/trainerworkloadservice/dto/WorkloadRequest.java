@@ -6,11 +6,13 @@ import lombok.Data;
 import jakarta.validation.constraints.*;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class WorkloadRequest {
+public class WorkloadRequest implements Serializable {
     @NotBlank
     private String username;
 

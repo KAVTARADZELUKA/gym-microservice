@@ -10,6 +10,12 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.MySQLDialect
 
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+    destination: workload
+
 management:
   endpoints:
     web:
@@ -26,6 +32,7 @@ management:
 server:
   servlet:
     context-path: /api
+
 ---
 spring:
   config:
