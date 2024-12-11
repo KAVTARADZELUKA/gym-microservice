@@ -1,6 +1,7 @@
 package com.example.trainerworkloadservice.config;
 
 import jakarta.jms.ConnectionFactory;
+import org.apache.activemq.command.ActiveMQQueue;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,5 +45,10 @@ public class JmsConfiguration {
         factory.setConcurrency("5-10");
 
         return factory;
+    }
+
+    @Bean
+    public ActiveMQQueue deadLetterQueue() {
+        return new ActiveMQQueue("workloadDLQ");
     }
 }
