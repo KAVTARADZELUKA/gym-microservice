@@ -7,6 +7,7 @@ import com.example.trainerworkloadservice.h2.repository.TrainerWorkloadRepositor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +26,7 @@ public class TrainerWorkloadService {
         this.repository = repository;
     }
 
+    @Transactional
     public void updateWorkload(String transactionId, WorkloadRequest request) {
         logger.info("Transaction Started: transactionId={}, method=updateWorkload, trainingDetails={}", transactionId, request);
         try {

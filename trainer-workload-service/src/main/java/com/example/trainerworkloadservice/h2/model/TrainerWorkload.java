@@ -17,6 +17,6 @@ public class TrainerWorkload {
     private String lastName;
     private Boolean isActive;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<TrainingSummary> trainingSummaries;
 }

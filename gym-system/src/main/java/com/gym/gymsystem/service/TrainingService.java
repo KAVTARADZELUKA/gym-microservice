@@ -1,6 +1,7 @@
 package com.gym.gymsystem.service;
 
 import com.gym.gymsystem.dto.trainer.TrainerInfo;
+import com.gym.gymsystem.dto.workload.WorkloadMessage;
 import com.gym.gymsystem.dto.workload.WorkloadRequest;
 import com.gym.gymsystem.entity.Trainee;
 import com.gym.gymsystem.entity.Trainer;
@@ -14,6 +15,7 @@ import com.gym.gymsystem.repository.TrainingRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,14 +39,18 @@ public class TrainingService {
     private final UserService userService;
     private final WorkloadInterface workloadInterface;
     private static final String CIRCUIT_BREAKER_NAME = "workloadService";
+    private final MessageProducer messageProducer;
+    @Value("${spring.activemq.destination}")
+    private String destination;
 
-    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, WorkloadInterface workloadInterface) {
+    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, WorkloadInterface workloadInterface, MessageProducer messageProducer) {
         this.trainingRepository = trainingRepository;
         this.trainerService = trainerService;
         this.trainingTypeService = trainingTypeService;
         this.traineeService = traineeService;
         this.userService = userService;
         this.workloadInterface = workloadInterface;
+        this.messageProducer = messageProducer;
     }
 
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "workloadFallback")
@@ -78,9 +84,9 @@ public class TrainingService {
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Trainer trainer : training.getTrainers()) {
-            sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
+            messageProducer.sendTo(destination, new WorkloadMessage(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
                     trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                    training.getTrainingDuration(), ADD.getType()),transactionId);
+                    training.getTrainingDuration(), ADD.getType()), transactionId));
         }
         return newTraining;
     }
