@@ -222,8 +222,6 @@ public class TrainingControllerTest {
         when(traineeService.getTraineeProfileByUsername( anyString()))
                 .thenReturn(trainee);
         when(trainerService.findByUsername(anyString())).thenReturn(trainer1);
-        when(trainingService.createTraining( any(Training.class),any(String.class)))
-                .thenReturn(null);
 
         mockMvc.perform(post("/training")
                         .param("username", "username")
