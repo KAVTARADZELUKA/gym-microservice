@@ -2,6 +2,7 @@ package com.example.trainerworkloadservice.service;
 
 import com.example.trainerworkloadservice.dto.WorkloadMessage;
 import com.example.trainerworkloadservice.dto.WorkloadRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,15 @@ public class WorkloadConsumer {
 
             service.updateWorkload(transactionId, request);
 
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
+            logger.error("Failed to deserialize message: {}. Error: {}", message, e.getMessage(), e);
             sendToDeadLetterQueue(message);
-            logger.error("Failed to parse message: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid workload message: {}. Error: {}", message, e.getMessage(), e);
+            sendToDeadLetterQueue(message);
+        } catch (Exception e) {
+            logger.error("Unexpected error processing message: {}. Error: {}", message, e.getMessage(), e);
+            sendToDeadLetterQueue(message);
         }
     }
 
