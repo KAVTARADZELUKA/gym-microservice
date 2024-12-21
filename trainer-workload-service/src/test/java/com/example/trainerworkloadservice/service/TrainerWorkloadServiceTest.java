@@ -46,7 +46,7 @@ public class TrainerWorkloadServiceTest {
     }
 
     @Test
-    public void updateWorkloadShouldThrowIfUserIsInactiveAndAdding() {
+    void updateWorkloadShouldThrowIfUserIsInactiveAndAdding() {
         validRequest.setIsActive(false);
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -55,7 +55,7 @@ public class TrainerWorkloadServiceTest {
     }
 
     @Test
-    public void getTrainerMonthlySummaryShouldReturnCorrectData() {
+    void getTrainerMonthlySummaryShouldReturnCorrectData() {
         TrainerWorkload mockedWorkload = createMockWorkload();
         when(repository.findByUsername("testUsername")).thenReturn(Optional.of(mockedWorkload));
 
@@ -67,7 +67,7 @@ public class TrainerWorkloadServiceTest {
     }
 
     @Test
-    public void getTrainerMonthlySummaryShouldThrowIfNoTrainerFound() {
+    void getTrainerMonthlySummaryShouldThrowIfNoTrainerFound() {
         when(repository.findByUsername("wrongUsername")).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () -> {

@@ -44,7 +44,7 @@ public class TrainerWorkloadControllerTests {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -52,7 +52,7 @@ public class TrainerWorkloadControllerTests {
     }
 
     @Test
-    public void updateWorkload_ShouldReturnOk_WhenAuthorized() throws Exception {
+    void updateWorkload_ShouldReturnOk_WhenAuthorized() throws Exception {
         WorkloadRequest request = WorkloadRequest.builder()
                 .username("testUsername")
                 .firstName("John")
@@ -75,7 +75,7 @@ public class TrainerWorkloadControllerTests {
     }
 
     @Test
-    public void updateWorkload_ShouldThrowAccessDenied_WhenUnauthorized() throws Exception {
+    void updateWorkload_ShouldThrowAccessDenied_WhenUnauthorized() throws Exception {
         WorkloadRequest request = WorkloadRequest.builder()
                 .username("testUsername")
                 .firstName("John")
@@ -102,7 +102,7 @@ public class TrainerWorkloadControllerTests {
 
 
     @Test
-    public void getTrainerMonthlySummary_ShouldReturnSummary_WhenCalled() throws Exception {
+    void getTrainerMonthlySummary_ShouldReturnSummary_WhenCalled() throws Exception {
         String username = "testUsername";
         TrainerMonthlySummaryResponse expectedResponse = TrainerMonthlySummaryResponse.builder()
                 .username(username)
