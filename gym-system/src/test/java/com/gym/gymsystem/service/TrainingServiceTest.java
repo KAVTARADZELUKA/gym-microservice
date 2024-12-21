@@ -1,16 +1,16 @@
 package com.gym.gymsystem.service;
 
 import com.gym.gymsystem.dto.trainer.TrainerInfo;
-import com.gym.gymsystem.dto.workload.WorkloadRequest;
 import com.gym.gymsystem.entity.*;
 import com.gym.gymsystem.feign.WorkloadInterface;
 import com.gym.gymsystem.repository.TrainingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,9 +18,9 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class TrainingServiceTest {
     @Mock
     private TrainingRepository trainingRepository;
@@ -33,6 +33,9 @@ class TrainingServiceTest {
     private TrainingTypeService trainingTypeService;
 
     @Mock
+    private MessageProducer messageProducer;
+
+    @Mock
     private TrainerService trainerService;
 
     @InjectMocks
@@ -40,7 +43,7 @@ class TrainingServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(trainingService, "destination", "expectedDestination");
     }
 
     @Test
@@ -61,25 +64,30 @@ class TrainingServiceTest {
         user2.setIsActive(true);
         trainer2.setUser(user2);
 
-        List<Trainer> trainers = Arrays.asList(trainer1, trainer2);
+        LinkedList<Trainer> trainers = new LinkedList<>();
+        trainers.add(trainer1);
+        trainers.add(trainer2);
 
-        String username = "username";
-        String password = "password";
         Training training = new Training();
         training.setName("Box");
         training.setTrainingDate(LocalDate.now().atStartOfDay().plusDays(1));
-        training.setTrainingType(new TrainingType());
+
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTrainingTypeName("Fitness");
+        training.setTrainingType(trainingType);
         training.setTrainers(trainers);
 
-        when(trainingRepository.saveAndFlush(any(Training.class))).thenReturn(training);
-        when(trainingTypeService.getTrainingTypeByName(training.getTrainingType().getTrainingTypeName())).thenReturn(null);
-        when(userService.usernamePasswordMatches(username,password)).thenReturn(true);
-        when(workloadInterface.updateWorkload(any(WorkloadRequest.class),any(String.class))).thenReturn(HttpStatus.OK);
+        when(trainingTypeService.getTrainingTypeByName("Fitness")).thenReturn(trainingType);
+        doNothing().when(messageProducer).sendTo(anyString(), any());
 
-        Training result = trainingService.createTraining(training,"1");
+        trainingService.createTraining(training, "1");
 
-        assertNotNull(result);
-        verify(trainingRepository).saveAndFlush(training);
+        verify(trainingRepository, times(1)).save(training);
+        verify(messageProducer, times(trainers.size())).sendTo(anyString(), any());
+
+        assertEquals("Fitness", training.getTrainingType().getTrainingTypeName());
+        assertNotNull(training.getTrainingType());
+        assertEquals(2, training.getTrainers().size());
     }
 
     @Test
@@ -88,9 +96,9 @@ class TrainingServiceTest {
         String password = "password";
         List<Training> trainings = Arrays.asList(new Training(), new Training());
         when(trainingRepository.findAll()).thenReturn(trainings);
-        when(userService.usernamePasswordMatches(username,password)).thenReturn(true);
+        when(userService.usernamePasswordMatches(username, password)).thenReturn(true);
 
-        Collection<Training> result = trainingService.getAllTrainings(username,password);
+        Collection<Training> result = trainingService.getAllTrainings(username, password);
 
         assertEquals(2, result.size());
         verify(trainingRepository).findAll();
@@ -119,7 +127,7 @@ class TrainingServiceTest {
         LocalDateTime fromDate = LocalDate.now().atStartOfDay();
         LocalDateTime toDate = LocalDate.now().atStartOfDay();
         String trainerName = "testTrainer";
-        String trainingType ="personal";
+        String trainingType = "personal";
 
         List<Training> trainings = Arrays.asList(new Training(), new Training());
         when(trainingRepository.findTrainingsByTrainerAndCriteria(username, fromDate, toDate, trainerName, trainingType))
@@ -161,8 +169,8 @@ class TrainingServiceTest {
 
         assertEquals(2, result.size());
 
-        assertEquals("trainer1", result.get(0).getUsername());
-        assertEquals("John", result.get(0).getFirstName());
+        assertEquals("trainer1", result.getFirst().getUsername());
+        assertEquals("John", result.getFirst().getFirstName());
         assertEquals("Doe", result.get(0).getLastName());
         assertEquals("Yoga", result.get(0).getSpecialization());
 
@@ -186,7 +194,7 @@ class TrainingServiceTest {
         when(userService.usernamePasswordMatches(trainee.getUser().getUsername(), trainee.getUser().getPassword())).thenReturn(false);
 
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
-            trainingService.updateTraineeTrainers(trainee.getUser().getUsername(), trainee.getUser().getPassword(),trainee, trainerIds);
+            trainingService.updateTraineeTrainers(trainee.getUser().getUsername(), trainee.getUser().getPassword(), trainee, trainerIds);
         });
         assertEquals("Invalid credentials", thrown.getMessage());
     }
@@ -204,7 +212,7 @@ class TrainingServiceTest {
         when(trainerService.findAllById(trainerIds)).thenReturn(new ArrayList<>());
 
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> {
-            trainingService.updateTraineeTrainers(trainee.getUser().getUsername(), trainee.getUser().getPassword(),trainee, trainerIds);
+            trainingService.updateTraineeTrainers(trainee.getUser().getUsername(), trainee.getUser().getPassword(), trainee, trainerIds);
         });
         assertEquals("One or more trainers not found", thrown.getMessage());
     }

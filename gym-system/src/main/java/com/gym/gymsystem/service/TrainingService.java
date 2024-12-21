@@ -1,6 +1,7 @@
 package com.gym.gymsystem.service;
 
 import com.gym.gymsystem.dto.trainer.TrainerInfo;
+import com.gym.gymsystem.dto.workload.WorkloadMessage;
 import com.gym.gymsystem.dto.workload.WorkloadRequest;
 import com.gym.gymsystem.entity.Trainee;
 import com.gym.gymsystem.entity.Trainer;
@@ -14,6 +15,7 @@ import com.gym.gymsystem.repository.TrainingRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -37,19 +39,23 @@ public class TrainingService {
     private final UserService userService;
     private final WorkloadInterface workloadInterface;
     private static final String CIRCUIT_BREAKER_NAME = "workloadService";
+    private final MessageProducer messageProducer;
+    @Value("${spring.activemq.destination}")
+    private String destination;
 
-    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, WorkloadInterface workloadInterface) {
+    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, WorkloadInterface workloadInterface, MessageProducer messageProducer) {
         this.trainingRepository = trainingRepository;
         this.trainerService = trainerService;
         this.trainingTypeService = trainingTypeService;
         this.traineeService = traineeService;
         this.userService = userService;
         this.workloadInterface = workloadInterface;
+        this.messageProducer = messageProducer;
     }
 
     @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "workloadFallback")
-    public void sendWorkloadUpdate(WorkloadRequest request,String transactionId) {
-        workloadInterface.updateWorkload(request,transactionId);
+    public void sendWorkloadUpdate(WorkloadRequest request, String transactionId) {
+        workloadInterface.updateWorkload(request, transactionId);
     }
 
     public HttpStatus workloadFallback(WorkloadRequest request, Throwable throwable) {
@@ -58,14 +64,11 @@ public class TrainingService {
     }
 
     @Transactional
-    public Training createTraining(Training training,String transactionId) {
+    public void createTraining(Training training, String transactionId) {
         logger.info("Creating training: {}, transactionId={}", training, transactionId);
 
-        if (!training.getTrainingDate().isAfter(LocalDate.now().atStartOfDay())) {
-            throw new IllegalArgumentException("Training date must be in the future.");
-        }else if ((training.getTrainers().getFirst().getUser().getIsActive() == null || !training.getTrainers().getFirst().getUser().getIsActive())) {
-            throw new IllegalArgumentException("Cannot add workload for an inactive user.");
-        }
+        validateTrainingDate(training);
+        validateTrainers(training.getTrainers());
 
         TrainingType trainingType = trainingTypeService.getTrainingTypeByName(training.getTrainingType().getTrainingTypeName());
         if (trainingType == null) {
@@ -74,15 +77,42 @@ public class TrainingService {
             trainingTypeService.save(trainingType);
         }
         training.setTrainingType(trainingType);
-        Training newTraining = trainingRepository.saveAndFlush(training);
+        trainingRepository.save(training);
 
+        sendWorkloadMessages(training, transactionId);
+    }
+
+    private void validateTrainingDate(Training training) {
+        if (!training.getTrainingDate().isAfter(LocalDate.now().atStartOfDay())) {
+            throw new IllegalArgumentException("Training date must be in the future.");
+        }
+    }
+
+    private void validateTrainers(List<Trainer> trainers) {
+        for (Trainer trainer : trainers) {
+            if (trainer.getUser().getIsActive() == null || !trainer.getUser().getIsActive()) {
+                throw new IllegalArgumentException("Cannot add workload for an inactive user.");
+            }
+        }
+    }
+
+    private void sendWorkloadMessages(Training training, String transactionId) {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         for (Trainer trainer : training.getTrainers()) {
-            sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
-                    trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                    training.getTrainingDuration(), ADD.getType()),transactionId);
+            WorkloadMessage message = new WorkloadMessage(
+                    new WorkloadRequest(
+                            trainer.getUser().getUsername(),
+                            trainer.getUser().getFirstName(),
+                            trainer.getUser().getLastName(),
+                            trainer.getUser().getIsActive(),
+                            training.getTrainingDate().toLocalDate().format(dateFormatter),
+                            training.getTrainingDuration(),
+                            ADD.getType()
+                    ),
+                    transactionId
+            );
+            messageProducer.sendTo(destination, message);
         }
-        return newTraining;
     }
 
     public List<Training> findTrainingsByTraineeAndCriteria(String findUsername, LocalDateTime fromDate, LocalDateTime toDate, String trainerName, String trainingType) {
@@ -104,7 +134,7 @@ public class TrainingService {
                         trainer.getUser().getUsername(),
                         trainer.getUser().getFirstName(),
                         trainer.getUser().getLastName(),
-                       trainer.getSpecializations().stream()
+                        trainer.getSpecializations().stream()
                                 .findFirst()
                                 .map(TrainingType::getTrainingTypeName).get()
                 ))
@@ -142,15 +172,15 @@ public class TrainingService {
                 throw new IllegalArgumentException("Training date must be in the future.");
             }
             for (Trainer trainer : training.getTrainers()) {
-                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
+                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(), trainer.getUser().getFirstName(),
                         trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), DELETE.getType()),transactionId);
+                        training.getTrainingDuration(), DELETE.getType()), transactionId);
             }
             training.getTrainers().clear();
             for (Trainer trainer : newTrainers) {
-                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(),trainer.getUser().getFirstName(),
+                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(), trainer.getUser().getFirstName(),
                         trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), ADD.getType()),transactionId);
+                        training.getTrainingDuration(), ADD.getType()), transactionId);
             }
             training.getTrainers().addAll(newTrainers);
         }

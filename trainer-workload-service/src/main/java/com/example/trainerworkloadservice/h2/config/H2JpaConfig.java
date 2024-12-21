@@ -49,6 +49,7 @@ public class H2JpaConfig {
     }
 
     @Bean(name = "h2TransactionManager")
+    @Primary
     public PlatformTransactionManager h2TransactionManager(
             @Qualifier("h2EntityManagerFactory") LocalContainerEntityManagerFactoryBean h2EntityManagerFactory) {
         return new JpaTransactionManager(h2EntityManagerFactory.getObject());

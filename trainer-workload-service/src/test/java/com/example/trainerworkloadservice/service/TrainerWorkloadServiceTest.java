@@ -12,13 +12,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static com.example.trainerworkloadservice.dto.WorkloadEnum.ADD;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,33 +46,39 @@ public class TrainerWorkloadServiceTest {
     }
 
     @Test
-    public void updateWorkloadShouldThrowIfUserIsInactiveAndAdding() {
+    void updateWorkloadShouldThrowIfUserIsInactiveAndAdding() {
         validRequest.setIsActive(false);
 
         assertThrows(IllegalArgumentException.class, () -> {
             service.updateWorkload("123", validRequest);
         });
+
+        verify(repository, never()).save(any(TrainerWorkload.class));
     }
 
     @Test
-    public void getTrainerMonthlySummaryShouldReturnCorrectData() {
+    void getTrainerMonthlySummaryShouldReturnCorrectData() {
         TrainerWorkload mockedWorkload = createMockWorkload();
-        when(repository.findByUsername("testUsername")).thenReturn(Optional.of(mockedWorkload));
+        when(repository.findByUsername(any())).thenReturn(Optional.of(mockedWorkload));
 
         TrainerMonthlySummaryResponse summaryResponse = service.getTrainerMonthlySummary("testUsername");
 
         assertNotNull(summaryResponse);
         assertEquals("testUsername", summaryResponse.getUsername());
         assertNotNull(summaryResponse.getYears());
+
+        verify(repository, times(1)).findByUsername(eq("testUsername"));
     }
 
     @Test
-    public void getTrainerMonthlySummaryShouldThrowIfNoTrainerFound() {
-        when(repository.findByUsername("wrongUsername")).thenReturn(Optional.empty());
+    void getTrainerMonthlySummaryShouldThrowIfNoTrainerFound() {
+        when(repository.findByUsername(any())).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () -> {
             service.getTrainerMonthlySummary("wrongUsername");
         });
+
+        verify(repository, times(1)).findByUsername(eq("wrongUsername"));
     }
 
     private TrainerWorkload createMockWorkload() {
