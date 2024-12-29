@@ -1,9 +1,9 @@
 package com.example.trainerworkloadservice.service;
 
 import com.example.trainerworkloadservice.dto.*;
-import com.example.trainerworkloadservice.h2.model.TrainerWorkload;
-import com.example.trainerworkloadservice.h2.model.TrainingSummary;
-import com.example.trainerworkloadservice.h2.repository.TrainerWorkloadRepository;
+import com.example.trainerworkloadservice.mongodb.model.TrainerWorkload;
+import com.example.trainerworkloadservice.mongodb.model.TrainingSummary;
+import com.example.trainerworkloadservice.mongodb.repository.TrainerWorkloadRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,20 +42,28 @@ public class TrainerWorkloadService {
             }
 
             updateTrainingSummaries(workload, trainingDate, request.getDuration(), request.getActionType());
-
             repository.save(workload);
+
             logger.info("Operation Completed: transactionId={}, method=updateWorkload, status=SUCCESS", transactionId);
-        } catch (Exception ex) {
-            logger.error("Operation Failed: transactionId={}, method=updateWorkload, error={}", transactionId, ex.getMessage());
-            throw ex;
+        } catch (DateTimeParseException dtpe) {
+            logger.error("Invalid date format: transactionId={}, method=updateWorkload, error={}", transactionId, dtpe.getMessage());
+            throw new IllegalArgumentException("Invalid training date format. Use ISO_DATE format (yyyy-MM-dd).", dtpe);
+        } catch (NoSuchElementException nsee) {
+            logger.error("Trainer not found: transactionId={}, method=updateWorkload, error={}", transactionId, nsee.getMessage());
+            throw nsee;
+        } catch (IllegalArgumentException iae) {
+            logger.error("Validation error: transactionId={}, method=updateWorkload, error={}", transactionId, iae.getMessage());
+            throw iae;
+        } catch (RuntimeException re) {
+            logger.error("Unexpected runtime error: transactionId={}, method=updateWorkload, error={}", transactionId, re.getMessage());
+            throw re;
         }
     }
 
-    public TrainerMonthlySummaryResponse getTrainerMonthlySummary( String username) {
-        logger.info("Transaction Started:  method=getTrainerMonthlySummary, username={}", username);
+    public TrainerMonthlySummaryResponse getTrainerMonthlySummary(String username) {
+        logger.info("Transaction Started: method=getTrainerMonthlySummary, username={}", username);
 
         try {
-
             TrainerWorkload workload = repository.findByUsername(username)
                     .orElseThrow(() -> new NoSuchElementException("Trainer not found for username: " + username));
             logger.info("Operation Started: method=getTrainerMonthlySummary, username={}", username);
@@ -63,9 +71,12 @@ public class TrainerWorkloadService {
             TrainerMonthlySummaryResponse response = mapToMonthlySummaryResponse(workload);
             logger.info("Operation Completed: method=getTrainerMonthlySummary, status=SUCCESS");
             return response;
-        } catch (Exception ex) {
-            logger.error("Operation Failed: method=getTrainerMonthlySummary, error={}", ex.getMessage());
-            throw ex;
+        } catch (NoSuchElementException nsee) {
+            logger.error("Trainer not found: method=getTrainerMonthlySummary, error={}", nsee.getMessage());
+            throw nsee;
+        } catch (RuntimeException re) {
+            logger.error("Unexpected runtime error: method=getTrainerMonthlySummary, error={}", re.getMessage());
+            throw re;
         }
     }
 

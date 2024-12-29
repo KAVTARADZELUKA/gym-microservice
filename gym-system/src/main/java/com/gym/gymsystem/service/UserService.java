@@ -9,7 +9,6 @@ import com.gym.gymsystem.repository.UserRepository;
 import com.gym.gymsystem.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,7 +30,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Message logout(HttpServletRequest req, JwtTokenUtil jwtTokenUtil,TokenBlacklistService tokenBlacklistService) {
+    public Message logout(HttpServletRequest req, JwtTokenUtil jwtTokenUtil, TokenBlacklistService tokenBlacklistService) {
         String token = req.getHeader("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {

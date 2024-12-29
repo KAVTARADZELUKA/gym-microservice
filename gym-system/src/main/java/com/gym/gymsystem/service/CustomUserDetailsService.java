@@ -1,7 +1,6 @@
 package com.gym.gymsystem.service;
 
 import com.gym.gymsystem.entity.User;
-import com.gym.gymsystem.exception.UserNotFoundException;
 import com.gym.gymsystem.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

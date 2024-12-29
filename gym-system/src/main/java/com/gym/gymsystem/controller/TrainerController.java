@@ -5,7 +5,6 @@ import com.gym.gymsystem.dto.trainer.TrainerRegistrationRequest;
 import com.gym.gymsystem.dto.trainer.UpdateTrainerProfileRequest;
 import com.gym.gymsystem.dto.user.Message;
 import com.gym.gymsystem.dto.user.UpdateStatusRequest;
-import com.gym.gymsystem.entity.Trainee;
 import com.gym.gymsystem.entity.Trainer;
 import com.gym.gymsystem.exception.CustomAccessDeniedException;
 import com.gym.gymsystem.service.AuthorizationService;
@@ -19,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -54,7 +52,7 @@ public class TrainerController {
         if (!authorizationService.isAdmin() && !authorizationService.isAuthenticatedUser(findUsername)) {
             throw new CustomAccessDeniedException("You do not have permission to get this trainer's profile.");
         }
-        TrainerProfileResponse response = trainerService.getTrainerProfileAndTraineesByUsername( findUsername);
+        TrainerProfileResponse response = trainerService.getTrainerProfileAndTraineesByUsername(findUsername);
         return ResponseEntity.ok(response);
     }
 
@@ -65,7 +63,7 @@ public class TrainerController {
         if (!authorizationService.isAdmin() && !authorizationService.isAuthenticatedUser(trainerUsername)) {
             throw new CustomAccessDeniedException("You do not have permission to update this trainer's profile.");
         }
-        TrainerProfileResponse response = trainerService.updateProfile( trainerUsername,request);
+        TrainerProfileResponse response = trainerService.updateProfile(trainerUsername, request);
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
     }
 
@@ -73,7 +71,7 @@ public class TrainerController {
     public ResponseEntity<Message> updateTrainerStatus(
             @PathVariable("findUsername") String findUsername,
             @RequestBody UpdateStatusRequest request) {
-        trainerService.updateTraineeStatus( findUsername, request.getIsActive());
+        trainerService.updateTraineeStatus(findUsername, request.getIsActive());
         String status = request.getIsActive() ? "activated" : "deactivated";
         return ResponseEntity.ok(new Message("Trainer " + findUsername + " has been " + status + " successfully"));
     }

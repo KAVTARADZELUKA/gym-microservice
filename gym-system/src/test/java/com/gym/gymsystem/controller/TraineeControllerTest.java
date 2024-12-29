@@ -9,7 +9,6 @@ import com.gym.gymsystem.entity.Trainee;
 import com.gym.gymsystem.entity.User;
 import com.gym.gymsystem.service.AuthorizationService;
 import com.gym.gymsystem.service.TraineeService;
-import org.springframework.security.test.context.support.WithMockUser;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -23,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -32,7 +30,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class TraineeControllerTest {
@@ -151,7 +148,7 @@ public class TraineeControllerTest {
         expectedResponse.setActive(true);
 
         when(authorizationService.isAuthenticatedUser("testUser")).thenReturn(true);
-        when(traineeService.getTraineeProfileByUsername( anyString())).thenReturn(trainee);
+        when(traineeService.getTraineeProfileByUsername(anyString())).thenReturn(trainee);
         when(traineeService.getTraineeProfileAndTrainersByUsername(anyString()))
                 .thenReturn(expectedResponse);
 

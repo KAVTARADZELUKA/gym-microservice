@@ -2,9 +2,9 @@ package com.example.trainerworkloadservice.service;
 
 import com.example.trainerworkloadservice.dto.TrainerMonthlySummaryResponse;
 import com.example.trainerworkloadservice.dto.WorkloadRequest;
-import com.example.trainerworkloadservice.h2.model.TrainerWorkload;
-import com.example.trainerworkloadservice.h2.model.TrainingSummary;
-import com.example.trainerworkloadservice.h2.repository.TrainerWorkloadRepository;
+import com.example.trainerworkloadservice.mongodb.model.TrainerWorkload;
+import com.example.trainerworkloadservice.mongodb.model.TrainingSummary;
+import com.example.trainerworkloadservice.mongodb.repository.TrainerWorkloadRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
