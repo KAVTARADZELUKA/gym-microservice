@@ -1,4 +1,4 @@
-package com.example.trainerworkloadservice.mongoDB.model;
+package com.example.trainerworkloadservice.mongodb.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

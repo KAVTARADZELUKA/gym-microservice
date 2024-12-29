@@ -1,9 +1,9 @@
 package com.example.trainerworkloadservice.service;
 
 import com.example.trainerworkloadservice.dto.*;
-import com.example.trainerworkloadservice.mongoDB.model.TrainerWorkload;
-import com.example.trainerworkloadservice.mongoDB.model.TrainingSummary;
-import com.example.trainerworkloadservice.mongoDB.repository.TrainerWorkloadRepository;
+import com.example.trainerworkloadservice.mongodb.model.TrainerWorkload;
+import com.example.trainerworkloadservice.mongodb.model.TrainingSummary;
+import com.example.trainerworkloadservice.mongodb.repository.TrainerWorkloadRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

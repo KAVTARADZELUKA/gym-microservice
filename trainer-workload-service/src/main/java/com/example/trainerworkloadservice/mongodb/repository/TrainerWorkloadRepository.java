@@ -1,6 +1,6 @@
-package com.example.trainerworkloadservice.mongoDB.repository;
+package com.example.trainerworkloadservice.mongodb.repository;
 
-import com.example.trainerworkloadservice.mongoDB.model.TrainerWorkload;
+import com.example.trainerworkloadservice.mongodb.model.TrainerWorkload;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
