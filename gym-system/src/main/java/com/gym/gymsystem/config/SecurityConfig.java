@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -48,20 +47,20 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/trainee").permitAll()
                         .requestMatchers(HttpMethod.POST, "/trainer").permitAll()
-                        .requestMatchers( "/auth/change-password").permitAll()
-                        .requestMatchers( "/training-types").permitAll()
+                        .requestMatchers("/auth/change-password").permitAll()
+                        .requestMatchers("/training-types").permitAll()
 
-                        .requestMatchers(HttpMethod.PUT,"/trainee/*").hasAnyRole(ADMIN.getRole(), TRAINEE.getRole())
-                        .requestMatchers(HttpMethod.DELETE,"/trainee/*").hasAnyRole(ADMIN.getRole())
-                        .requestMatchers(HttpMethod.PATCH,"/trainee/status/*").hasAnyRole(ADMIN.getRole())
+                        .requestMatchers(HttpMethod.PUT, "/trainee/*").hasAnyRole(ADMIN.getRole(), TRAINEE.getRole())
+                        .requestMatchers(HttpMethod.DELETE, "/trainee/*").hasAnyRole(ADMIN.getRole())
+                        .requestMatchers(HttpMethod.PATCH, "/trainee/status/*").hasAnyRole(ADMIN.getRole())
 
-                        .requestMatchers(HttpMethod.GET,"/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
-                        .requestMatchers(HttpMethod.PUT,"/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
-                        .requestMatchers(HttpMethod.PATCH,"/trainer/status/*").hasAnyRole(ADMIN.getRole())
+                        .requestMatchers(HttpMethod.GET, "/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
+                        .requestMatchers(HttpMethod.PUT, "/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
+                        .requestMatchers(HttpMethod.PATCH, "/trainer/status/*").hasAnyRole(ADMIN.getRole())
 
-                        .requestMatchers(HttpMethod.PUT,"/training/trainee/*").hasAnyRole(ADMIN.getRole())
-                        .requestMatchers(HttpMethod.GET,"/training/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
-                        .requestMatchers(HttpMethod.POST,"/training").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
+                        .requestMatchers(HttpMethod.PUT, "/training/trainee/*").hasAnyRole(ADMIN.getRole())
+                        .requestMatchers(HttpMethod.GET, "/training/trainer/*").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
+                        .requestMatchers(HttpMethod.POST, "/training").hasAnyRole(ADMIN.getRole(), TRAINER.getRole())
 
                         .requestMatchers("/actuator").permitAll()
                         .requestMatchers("/actuator/**").permitAll()

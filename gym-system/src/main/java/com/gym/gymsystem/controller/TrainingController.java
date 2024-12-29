@@ -6,8 +6,6 @@ import com.gym.gymsystem.dto.training.TrainingInfo;
 import com.gym.gymsystem.dto.training.TrainingInfoForTrainer;
 import com.gym.gymsystem.dto.training.UpdateTraineeTrainersRequest;
 import com.gym.gymsystem.dto.user.Message;
-import com.gym.gymsystem.dto.workload.WorkloadRequest;
-import com.gym.gymsystem.entity.Trainer;
 import com.gym.gymsystem.entity.Training;
 import com.gym.gymsystem.entity.TrainingType;
 import com.gym.gymsystem.exception.CustomAccessDeniedException;
@@ -61,7 +59,7 @@ public class TrainingController {
         if (transactionId == null) {
             transactionId = UUID.randomUUID().toString();
         }
-        List<Training> updatedTrainers = trainingService.updateTraineeTrainersByUsername(findUsername, request.getTrainersUsernames(),transactionId);
+        List<Training> updatedTrainers = trainingService.updateTraineeTrainersByUsername(findUsername, request.getTrainersUsernames(), transactionId);
         List<TrainerInfo> trainerInfos = updatedTrainers.stream()
                 .flatMap(training -> training.getTrainers().stream())
                 .map(trainer -> new TrainerInfo(
@@ -156,7 +154,7 @@ public class TrainingController {
                 .trainingDuration(request.getTrainingDuration())
                 .build();
 
-        trainingService.createTraining(training,transactionId);
+        trainingService.createTraining(training, transactionId);
         return ResponseEntity.ok(new Message("Training added successfully"));
     }
 }
