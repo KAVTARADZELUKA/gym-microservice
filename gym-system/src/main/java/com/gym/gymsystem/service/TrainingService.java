@@ -172,15 +172,35 @@ public class TrainingService {
                 throw new IllegalArgumentException("Training date must be in the future.");
             }
             for (Trainer trainer : training.getTrainers()) {
-                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(), trainer.getUser().getFirstName(),
-                        trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), DELETE.getType()), transactionId);
+                WorkloadMessage message = new WorkloadMessage(
+                        new WorkloadRequest(
+                                trainer.getUser().getUsername(),
+                                trainer.getUser().getFirstName(),
+                                trainer.getUser().getLastName(),
+                                trainer.getUser().getIsActive(),
+                                training.getTrainingDate().toLocalDate().format(dateFormatter),
+                                training.getTrainingDuration(),
+                                DELETE.getType()
+                        ),
+                        transactionId
+                );
+                messageProducer.sendTo(destination, message);
             }
             training.getTrainers().clear();
             for (Trainer trainer : newTrainers) {
-                sendWorkloadUpdate(new WorkloadRequest(trainer.getUser().getUsername(), trainer.getUser().getFirstName(),
-                        trainer.getUser().getLastName(), trainer.getUser().getIsActive(), training.getTrainingDate().toLocalDate().format(dateFormatter),
-                        training.getTrainingDuration(), ADD.getType()), transactionId);
+                WorkloadMessage message = new WorkloadMessage(
+                        new WorkloadRequest(
+                                trainer.getUser().getUsername(),
+                                trainer.getUser().getFirstName(),
+                                trainer.getUser().getLastName(),
+                                trainer.getUser().getIsActive(),
+                                training.getTrainingDate().toLocalDate().format(dateFormatter),
+                                training.getTrainingDuration(),
+                                ADD.getType()
+                        ),
+                        transactionId
+                );
+                messageProducer.sendTo(destination, message);
             }
             training.getTrainers().addAll(newTrainers);
         }
