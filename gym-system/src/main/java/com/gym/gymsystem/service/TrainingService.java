@@ -10,7 +10,6 @@ import com.gym.gymsystem.entity.TrainingType;
 import com.gym.gymsystem.exception.InvalidCredentialsException;
 import com.gym.gymsystem.exception.TraineeNotFoundException;
 import com.gym.gymsystem.exception.TrainerNotFoundException;
-import com.gym.gymsystem.feign.WorkloadInterface;
 import com.gym.gymsystem.repository.TrainingRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
@@ -37,31 +36,20 @@ public class TrainingService {
     private final TrainingTypeService trainingTypeService;
     private final TraineeService traineeService;
     private final UserService userService;
-    private final WorkloadInterface workloadInterface;
     private static final String CIRCUIT_BREAKER_NAME = "workloadService";
     private final MessageProducer messageProducer;
     @Value("${spring.activemq.destination}")
     private String destination;
 
-    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, WorkloadInterface workloadInterface, MessageProducer messageProducer) {
+    public TrainingService(TrainingRepository trainingRepository, @Lazy TrainerService trainerService, TrainingTypeService trainingTypeService, @Lazy TraineeService traineeService, UserService userService, MessageProducer messageProducer) {
         this.trainingRepository = trainingRepository;
         this.trainerService = trainerService;
         this.trainingTypeService = trainingTypeService;
         this.traineeService = traineeService;
         this.userService = userService;
-        this.workloadInterface = workloadInterface;
         this.messageProducer = messageProducer;
     }
 
-    @CircuitBreaker(name = CIRCUIT_BREAKER_NAME, fallbackMethod = "workloadFallback")
-    public void sendWorkloadUpdate(WorkloadRequest request, String transactionId) {
-        workloadInterface.updateWorkload(request, transactionId);
-    }
-
-    public HttpStatus workloadFallback(WorkloadRequest request, Throwable throwable) {
-        logger.error("Fallback triggered for workload update: {}. Error: {}", request.getUsername(), throwable.getMessage());
-        return HttpStatus.SERVICE_UNAVAILABLE;
-    }
 
     @Transactional
     public void createTraining(Training training, String transactionId) {

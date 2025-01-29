@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:9.0
+    container_name: mysqldb
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: gym_system_db
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - gym-network
+
+  redis:
+    image: redis:7.0
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - gym-network
+
+  activemq:
+    image: rmohr/activemq:latest
+    container_name: new-activemq-broker
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      ACTIVEMQ_ADMIN_LOGIN: admin
+      ACTIVEMQ_ADMIN_PASSWORD: admin
+    networks:
+      - gym-network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: newmongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: trainerWorkloadDB
+    networks:
+      - gym-network
+
+  workload-microservice:
+    image: workload-microservice:latest
+    container_name: workload-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      - redis
+      - activemq
+      - mongodb
+    environment:
+      REDIS_HOST: redis-cache
+      ACTIVEMQ_BROKER_URL: tcp://new-activemq-broker:61616
+      MONGO_URI: mongodb://root:password@newmongodb:27017/trainerWorkloadDB?authSource=admin
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/gym_system_db
+    networks:
+      - gym-network
+
+  gym-main-microservice:
+    image: gym-main-microservice:latest
+    container_name: gym-main-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+      - activemq
+      - mongodb
+    environment:
+      REDIS_HOST: redis-cache
+      ACTIVEMQ_BROKER_URL: tcp://new-activemq-broker:61616
+      MONGO_URI: mongodb://root:password@newmongodb:27017/trainerWorkloadDB?authSource=admin
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/gym_system_db
+    networks:
+      - gym-network
+
+volumes:
+  mysql-data:
+  redis-data:
+  mongo-data:
+
+networks:
+  gym-network:
