@@ -1,9 +1,15 @@
 package com.gym.gymsystem.dto.trainer;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateTrainerProfileRequest {
     @NotBlank(message = "firstName is required")
     private String firstName;

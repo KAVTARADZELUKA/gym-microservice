@@ -1,6 +1,8 @@
 spring:
   application:
     name: gym-system-service
+  profiles:
+    active: local
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,6 +17,10 @@ spring:
     user: admin
     password: admin
     destination: workload
+
+#logging:
+#  level:
+#    org.springframework: DEBUG
 
 management:
   endpoints:
