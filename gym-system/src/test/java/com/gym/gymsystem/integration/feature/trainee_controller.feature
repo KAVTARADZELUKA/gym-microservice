@@ -4,7 +4,6 @@ Feature: Trainee Management
     Given I have a valid JWT token for "ROLE_ADMIN"
 
   Scenario: Register a new trainee (positive)
-#    When DB
     When I send a POST request to "/trainee" with valid registration details
     Then I should receive a 201 status code
     And the response should contain the registered username and password

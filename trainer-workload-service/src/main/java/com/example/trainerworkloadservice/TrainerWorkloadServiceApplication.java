@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class TrainerWorkloadServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TrainerWorkloadServiceApplication.class, args);
+        SpringApplication app = new SpringApplication(TrainerWorkloadServiceApplication.class);
+        app.setAdditionalProfiles("local");
+        app.run(args);
     }
 
 }

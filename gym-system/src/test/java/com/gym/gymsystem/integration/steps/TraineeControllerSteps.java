@@ -59,14 +59,6 @@ public class TraineeControllerSteps {
     private String traineeUsername;
     private String trainerUsername;
 
-//    @Value("${spring.datasource.url}")
-//    private String datasourceUrl;
-
-//    @Given("DB")
-//    public void checkActiveProfile() {
-//        System.out.println("Active DataSource URL: " + datasourceUrl);
-//    }
-
     @PostConstruct
     public void initialize() {
         MockitoAnnotations.openMocks(this);
