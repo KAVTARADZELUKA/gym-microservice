@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GymSystemApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(GymSystemApplication.class, args);
+        SpringApplication app = new SpringApplication(GymSystemApplication.class);
+        app.setAdditionalProfiles("local");
+        app.run(args);
     }
 
 }

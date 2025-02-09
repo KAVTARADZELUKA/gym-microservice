@@ -161,15 +161,14 @@ public class TrainingService {
             }
             for (Trainer trainer : training.getTrainers()) {
                 WorkloadMessage message = new WorkloadMessage(
-                        new WorkloadRequest(
-                                trainer.getUser().getUsername(),
-                                trainer.getUser().getFirstName(),
-                                trainer.getUser().getLastName(),
-                                trainer.getUser().getIsActive(),
-                                training.getTrainingDate().toLocalDate().format(dateFormatter),
-                                training.getTrainingDuration(),
-                                DELETE.getType()
-                        ),
+                        WorkloadRequest.builder()
+                                .username(trainer.getUser().getUsername())
+                                .firstName(trainer.getUser().getFirstName())
+                                .lastName(trainer.getUser().getLastName())
+                                .isActive(trainer.getUser().getIsActive())
+                                .trainingDate(training.getTrainingDate().toLocalDate().format(dateFormatter))
+                                .duration(training.getTrainingDuration())
+                                .actionType(DELETE.getType()).build(),
                         transactionId
                 );
                 messageProducer.sendTo(destination, message);
@@ -177,15 +176,14 @@ public class TrainingService {
             training.getTrainers().clear();
             for (Trainer trainer : newTrainers) {
                 WorkloadMessage message = new WorkloadMessage(
-                        new WorkloadRequest(
-                                trainer.getUser().getUsername(),
-                                trainer.getUser().getFirstName(),
-                                trainer.getUser().getLastName(),
-                                trainer.getUser().getIsActive(),
-                                training.getTrainingDate().toLocalDate().format(dateFormatter),
-                                training.getTrainingDuration(),
-                                ADD.getType()
-                        ),
+                        WorkloadRequest.builder()
+                                .username(trainer.getUser().getUsername())
+                                .firstName(trainer.getUser().getFirstName())
+                                .lastName(trainer.getUser().getLastName())
+                                .isActive(trainer.getUser().getIsActive())
+                                .trainingDate(training.getTrainingDate().toLocalDate().format(dateFormatter))
+                                .duration(training.getTrainingDuration())
+                                .actionType(ADD.getType()).build(),
                         transactionId
                 );
                 messageProducer.sendTo(destination, message);
