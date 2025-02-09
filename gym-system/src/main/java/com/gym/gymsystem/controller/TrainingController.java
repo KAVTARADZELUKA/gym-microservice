@@ -9,7 +9,6 @@ import com.gym.gymsystem.dto.user.Message;
 import com.gym.gymsystem.entity.Training;
 import com.gym.gymsystem.entity.TrainingType;
 import com.gym.gymsystem.exception.CustomAccessDeniedException;
-import com.gym.gymsystem.feign.WorkloadInterface;
 import com.gym.gymsystem.service.AuthorizationService;
 import com.gym.gymsystem.service.TraineeService;
 import com.gym.gymsystem.service.TrainerService;
@@ -30,7 +29,7 @@ public class TrainingController {
     private final TrainerService trainerService;
     private final AuthorizationService authorizationService;
 
-    public TrainingController(TrainingService trainingService, TraineeService traineeService, TrainerService trainerService, AuthorizationService authorizationService, WorkloadInterface workloadInterface) {
+    public TrainingController(TrainingService trainingService, TraineeService traineeService, TrainerService trainerService, AuthorizationService authorizationService) {
         this.trainingService = trainingService;
         this.traineeService = traineeService;
         this.trainerService = trainerService;

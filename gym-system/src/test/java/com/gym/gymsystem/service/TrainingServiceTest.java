@@ -2,7 +2,6 @@ package com.gym.gymsystem.service;
 
 import com.gym.gymsystem.dto.trainer.TrainerInfo;
 import com.gym.gymsystem.entity.*;
-import com.gym.gymsystem.feign.WorkloadInterface;
 import com.gym.gymsystem.repository.TrainingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +26,6 @@ class TrainingServiceTest {
 
     @Mock
     private UserService userService;
-    @Mock
-    private WorkloadInterface workloadInterface;
     @Mock
     private TrainingTypeService trainingTypeService;
 
